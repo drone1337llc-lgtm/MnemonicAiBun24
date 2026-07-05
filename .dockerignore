@@ -1,0 +1,10 @@
+mnemonicai_venv/
+mnemonicai_data/
+models/
+.mn_install_state/
+.git/
+*.log
+__pycache__/
+*.pyc
+.env
+node_modules/

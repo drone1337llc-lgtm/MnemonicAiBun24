@@ -1,0 +1,58 @@
+groups:
+  - name: mnemonicai_alerts
+    rules:
+      - alert: MnemonicAiDown
+        expr: up{job="mnemonicai"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MnemonicAi is down"
+          description: "MnemonicAi has been unreachable for 1 minute."
+
+      - alert: MnemonicAiHighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="mnemonicai"}[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MnemonicAi P95 latency > 5s"
+          description: "95th percentile latency is {{ $value }}s"
+
+      - alert: MnemonicAiHighErrorRate
+        expr: |
+          100 * sum(rate(http_requests_total{job="mnemonicai",status="5xx"}[5m]))
+          / sum(rate(http_requests_total{job="mnemonicai"}[5m])) > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MnemonicAi error rate > 10%"
+          description: "Error rate is {{ $value }}%"
+
+      - alert: MnemonicAiTrainingFailure
+        expr: increase(mnemonicai_training_events_total{result="failure"}[1h]) > 0
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Training failure detected"
+          description: "A QLoRA training run failed in the last hour."
+
+      - alert: MnemonicAiGPUMemoryHigh
+        expr: mnemonicai_gpu_memory_used_bytes / mnemonicai_gpu_memory_total_bytes > 0.95
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPU memory > 95% used"
+          description: "GPU {{ $labels.gpu_index }} memory near capacity"
+
+      - alert: MnemonicAiAdapterRollback
+        expr: increase(mnemonicai_training_events_total{result="rollback"}[1h]) > 0
+        for: 0s
+        labels:
+          severity: info
+        annotations:
+          summary: "Adapter rollback occurred"
+          description: "An adapter rollback was triggered in the last hour."

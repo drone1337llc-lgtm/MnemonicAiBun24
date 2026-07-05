@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mnemonicai
+  namespace: mnemonicai
+  labels:
+    app: mnemonicai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mnemonicai
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mnemonicai
+    spec:
+      nodeSelector:
+        nvidia.com/gpu.present: "true"
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: mnemonicai
+          image: ghcr.io/YOUR_GITHUB_ORG/mnemonicai:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8400
+              name: api
+            - containerPort: 8401
+              name: adapter-ui
+          env:
+            - name: MN_REPO
+              value: "/app"
+            - name: MN_HOST
+              value: "0.0.0.0"
+            - name: MN_PORT
+              value: "8400"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: HF_HOME
+              value: "/app/.cache/huggingface"
+            - name: TRANSFORMERS_OFFLINE
+              value: "0"
+          resources:
+            requests:
+              nvidia.com/gpu: 1
+              memory: 16Gi
+              cpu: "8"
+            limits:
+              nvidia.com/gpu: 1
+              memory: 32Gi
+              cpu: "16"
+          volumeMounts:
+            - name: data
+              mountPath: /app/mnemonicai_data
+            - name: models
+              mountPath: /app/models
+            - name: config
+              mountPath: /app/config.json
+              subPath: config.json
+              readOnly: true
+            - name: dshm
+              mountPath: /dev/shm
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8400
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8400
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
+          lifecycle:
+            preStop:
+              exec:
+                command: ["./mn_run.sh", "stop"]
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mnemonicai-data
+        - name: models
+          persistentVolumeClaim:
+            claimName: mnemonicai-models
+        - name: config
+          configMap:
+            name: mnemonicai-config
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 8Gi

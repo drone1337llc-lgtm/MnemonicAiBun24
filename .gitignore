@@ -1,2 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
 
+# Virtual environments
+mnemonicai_venv/
+venv/
+.venv/
+
+# Runtime data
+mnemonicai_data/
+!mnemonicai_data/.gitkeep
+
+# Models (too large for git)
+models/
+
+# Secrets
 .env
+
+# Install state
+.mn_install_state/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

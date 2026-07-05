@@ -1,0 +1,8 @@
+# requirements-gpu.txt — GPU training stack for MnemonicAi
+bitsandbytes>=0.45
+accelerate>=1.0
+peft>=0.14
+transformers>=4.45
+safetensors>=0.5
+sentencepiece>=0.2
+datasets>=2.20

@@ -1,0 +1,25 @@
+cd ~/MnemonicAi
+
+# 1. Create the directory structure
+mkdir -p app k8s prometheus grafana .github/workflows models mnemonicai_data
+
+# 2. Create all the files above using your editor of choice
+#    (or copy-paste from this response)
+
+# 3. Make scripts executable
+chmod +x mn_*.sh setup_deliverables.sh
+
+# 4. Initialize git
+git init
+git add .
+git commit -m "Initial commit — MnemonicAi project"
+
+# 5. (Optional) Generate K8s/CI/CD/Observability files via setup script
+bash setup_deliverables.sh
+
+# 6. Install
+./mn_install.sh
+
+# 7. Run
+./mn_run.sh background
+./mn_run.sh status

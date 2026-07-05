@@ -1,0 +1,103 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "mnemonicai",
+    "title": "MnemonicAi — Inference & Training",
+    "tags": ["mnemonicai", "llm"],
+    "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 1,
+    "refresh": "10s",
+    "time": { "from": "now-1h", "to": "now" },
+    "panels": [
+      {
+        "id": 1, "title": "Request Rate (req/s)", "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+        "targets": [{ "expr": "sum(rate(http_requests_total{job=\"mnemonicai\"}[5m]))", "legendFormat": "req/s" }],
+        "fieldConfig": { "defaults": { "unit": "reqps" } }
+      },
+      {
+        "id": 2, "title": "Error Rate (%)", "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+        "targets": [{ "expr": "100 * sum(rate(http_requests_total{job=\"mnemonicai\",status=\"5xx\"}[5m])) / sum(rate(http_requests_total{job=\"mnemonicai\"}[5m]))", "legendFormat": "errors %" }],
+        "fieldConfig": { "defaults": { "unit": "percent", "thresholds": { "mode": "absolute", "steps": [{"color":"green","value":null},{"color":"yellow","value":5},{"color":"red","value":10}] } } }
+      },
+      {
+        "id": 3, "title": "P95 Latency (s)", "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+        "targets": [{ "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"mnemonicai\"}[5m])) by (le))", "legendFormat": "p95" }],
+        "fieldConfig": { "defaults": { "unit": "s", "decimals": 2 } }
+      },
+      {
+        "id": 4, "title": "Active Adapter Version", "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+        "targets": [{ "expr": "mnemonicai_active_adapter_version", "legendFormat": "v" }],
+        "fieldConfig": { "defaults": { "decimals": 0 } }
+      },
+      {
+        "id": 10, "title": "Request Rate Over Time", "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+        "targets": [{ "expr": "sum by (handler) (rate(http_requests_total{job=\"mnemonicai\"}[5m]))", "legendFormat": "{{handler}}" }],
+        "fieldConfig": { "defaults": { "unit": "reqps" } }
+      },
+      {
+        "id": 11, "title": "Latency Distribution (P50/P95/P99)", "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+        "targets": [
+          { "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"mnemonicai\"}[5m])) by (le))", "legendFormat": "p50" },
+          { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"mnemonicai\"}[5m])) by (le))", "legendFormat": "p95" },
+          { "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"mnemonicai\"}[5m])) by (le))", "legendFormat": "p99" }
+        ],
+        "fieldConfig": { "defaults": { "unit": "s", "decimals": 3 } }
+      },
+      {
+        "id": 20, "title": "Training Loss", "type": "timeseries",
+        "gridPos": { "h": 8, "w": 8, "x": 0, "y": 12 },
+        "targets": [
+          { "expr": "mnemonicai_training_loss", "legendFormat": "train loss" },
+          { "expr": "mnemonicai_eval_loss", "legendFormat": "eval loss" }
+        ],
+        "fieldConfig": { "defaults": { "decimals": 4 } }
+      },
+      {
+        "id": 21, "title": "Training Events", "type": "timeseries",
+        "gridPos": { "h": 8, "w": 8, "x": 8, "y": 12 },
+        "targets": [
+          { "expr": "increase(mnemonicai_training_events_total{result=\"success\"}[1h])", "legendFormat": "success" },
+          { "expr": "increase(mnemonicai_training_events_total{result=\"failure\"}[1h])", "legendFormat": "failure" },
+          { "expr": "increase(mnemonicai_training_events_total{result=\"rollback\"}[1h])", "legendFormat": "rollback" }
+        ]
+      },
+      {
+        "id": 22, "title": "Adapter Count", "type": "stat",
+        "gridPos": { "h": 8, "w": 8, "x": 16, "y": 12 },
+        "targets": [{ "expr": "mnemonicai_adapter_count", "legendFormat": "adapters" }],
+        "fieldConfig": { "defaults": { "decimals": 0 } }
+      },
+      {
+        "id": 30, "title": "GPU Memory Usage (GB)", "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+        "targets": [
+          { "expr": "mnemonicai_gpu_memory_used_bytes / 1073741824", "legendFormat": "GPU {{gpu_index}} used" },
+          { "expr": "mnemonicai_gpu_memory_total_bytes / 1073741824", "legendFormat": "GPU {{gpu_index}} total" }
+        ],
+        "fieldConfig": { "defaults": { "unit": "decgbytes", "decimals": 1 } }
+      },
+      {
+        "id": 31, "title": "GPU Utilization (%)", "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+        "targets": [{ "expr": "mnemonicai_gpu_utilization_percent", "legendFormat": "GPU {{gpu_index}}" }],
+        "fieldConfig": { "defaults": { "unit": "percent", "max": 100 } }
+      },
+      {
+        "id": 40, "title": "Health Status", "type": "stat",
+        "gridPos": { "h": 4, "w": 24, "x": 0, "y": 28 },
+        "targets": [{ "expr": "mnemonicai_health_status", "legendFormat": "health" }],
+        "fieldConfig": { "defaults": { "mappings": [{"type":"value","options":{"0":{"text":"UNHEALTHY","color":"red"},"1":{"text":"HEALTHY","color":"green"}}}] } }
+      }
+    ],
+    "templating": { "list": [] },
+    "annotations": { "list": [] }
+  },
+  "overwrite": true
+}

@@ -1,0 +1,9 @@
+# requirements.txt — base dependencies for MnemonicAi
+fastapi>=0.115
+uvicorn[standard]>=0.32
+pydantic>=2.10
+httpx>=0.28
+sse-starlette>=2.1
+python-multipart>=0.0.18
+prometheus-fastapi-instrumentator>=7.0
+prometheus-client>=0.21
