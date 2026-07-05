@@ -1,0 +1,25 @@
+# 0. Prerequisites on every GPU node:
+#    - NVIDIA drivers installed
+#    - NVIDIA Container Toolkit configured for your container runtime
+#    - NVIDIA device plugin DaemonSet deployed:
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.1/deployments/static/nvidia-device-plugin.yml
+
+# 1. Label your GPU node (if not auto-detected by GPU Feature Discovery):
+kubectl label node <your-node> nvidia.com/gpu.present=true
+
+# 2. Taint GPU nodes so only GPU workloads land on them:
+kubectl taint node <your-node> nvidia.com/gpu=present:NoSchedule
+
+# 3. Deploy MnemonicAi:
+kubectl apply -k k8s/
+
+# 4. Check status:
+kubectl -n mnemonicai get pods
+kubectl -n mnemonicai logs -f deployment/mnemonicai
+
+# 5. Port-forward for local access:
+kubectl -n mnemonicai port-forward svc/mnemonicai 8400:8400 8401:8401 8402:8402
+
+# 6. Trigger a training job:
+kubectl -n mnemonicai apply -f k8s/train-job.yaml
+kubectl -n mnemonicai logs -f job/mnemonicai-train-1

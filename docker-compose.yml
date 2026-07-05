@@ -1,0 +1,52 @@
+# docker-compose.yml — MnemonicAi stack
+# Usage:
+#   docker compose up --build
+#   docker compose -f docker-compose.yml exec mnemonicai ./mn_run.sh status
+services:
+  mnemonicai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - MN_REPO=/app
+      - MN_HOST=0.0.0.0
+      - MN_PORT=8400
+      - HF_HOME=/app/.cache/huggingface
+    volumes:
+      - ./mnemonicai_data:/app/mnemonicai_data
+      - ./models:/app/models
+      - ./config.json:/app/config.json:ro
+      - ./.mn_gpu_roles:/app/.mn_gpu_roles:ro
+    ports:
+      - "8400:8400"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8400/health"]
+      interval: 30s
+      timeout: 15s
+      start_period: 90s
+      retries: 3
+    restart: unless-stopped
+
+  adapter-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "app/adapter_ui.py"]
+    environment:
+      - MN_REPO=/app
+    volumes:
+      - ./mnemonicai_data:/app/mnemonicai_data
+    ports:
+      - "8401:8401"
+    depends_on:
+      - mnemonicai
+    restart: unless-stopped

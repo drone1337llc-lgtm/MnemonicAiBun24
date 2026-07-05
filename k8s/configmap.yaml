@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mnemonicai-config
+  namespace: mnemonicai
+data:
+  config.json: |
+    {
+      "model_path": "models/ornith-1.0-9b",
+      "gguf_path": "models/ornith-1.0-9bgguf/ornith-1.0-9b.Q4_K_M.gguf",
+      "adapter_dir": "mnemonicai_data/adapter",
+      "data_dir": "mnemonicai_data",
+      "train_lr": 2e-4,
+      "train_steps": 8,
+      "lora_r": 16,
+      "lora_alpha": 64,
+      "lora_dropout": 0.05,
+      "lora_target_modules": ["q_proj","k_proj","v_proj","o_proj","gate_proj","up_proj","down_proj"],
+      "qlora_batch_size": 4,
+      "qlora_grad_accum": 4,
+      "qlora_gradient_checkpointing": true,
+      "qlora_max_seq_length": 1024,
+      "qlora_packing": true,
+      "qlora_max_grad_norm": 0.3,
+      "qlora_warmup_ratio": 0.03,
+      "qlora_lr_scheduler": "cosine",
+      "qlora_weight_decay": 0.0,
+      "qlora_dataloader_workers": 2,
+      "qlora_seed": 42,
+      "qlora_optim": "paged_adamw_8bit"
+    }

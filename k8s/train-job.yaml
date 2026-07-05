@@ -1,0 +1,61 @@
+# Template for triggering a QLoRA training run as a Kubernetes Job.
+# Usage:  kubectl apply -f k8s/train-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mnemonicai-train-{{ .RunID }}
+  namespace: mnemonicai
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: OnFailure
+      nodeSelector:
+        nvidia.com/gpu.present: "true"
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: trainer
+          image: ghcr.io/YOUR_GITHUB_ORG/mnemonicai:latest
+          imagePullPolicy: Always
+          command: ["./mn_run.sh", "train"]
+          env:
+            - name: MN_REPO
+              value: "/app"
+            - name: CUDA_VISIBLE_DEVICES
+              value: "0"
+          resources:
+            requests:
+              nvidia.com/gpu: 1
+              memory: 16Gi
+            limits:
+              nvidia.com/gpu: 1
+              memory: 32Gi
+          volumeMounts:
+            - name: data
+              mountPath: /app/mnemonicai_data
+            - name: models
+              mountPath: /app/models
+            - name: config
+              mountPath: /app/config.json
+              subPath: config.json
+              readOnly: true
+            - name: dshm
+              mountPath: /dev/shm
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mnemonicai-data
+        - name: models
+          persistentVolumeClaim:
+            claimName: mnemonicai-models
+        - name: config
+          configMap:
+            name: mnemonicai-config
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 8Gi

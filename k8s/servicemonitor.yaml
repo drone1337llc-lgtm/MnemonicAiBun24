@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mnemonicai
+  namespace: mnemonicai
+  labels:
+    app: mnemonicai
+    release: prometheus       # matches your kube-prometheus-stack release name
+spec:
+  selector:
+    matchLabels:
+      app: mnemonicai
+  namespaceSelector:
+    matchNames:
+      - mnemonicai
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
