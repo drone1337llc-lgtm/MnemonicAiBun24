@@ -1,4 +1,3 @@
-```markdown
 # MnemonicAi — Consolidated Box
 
 A complete guide to installing, running, and maintaining your AI memory system.
@@ -76,7 +75,7 @@ You need the MnemonicAi repository on your computer. If you haven't downloaded i
 
 ```bash
 cd ~
-git clone https://github.com/YOUR_ORG/MnemonicAi.git
+git clone https://github.com/drone1337llc-lgtm/MnemonicAiBun24.git
 cd MnemonicAi
 ```
 
