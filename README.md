@@ -812,8 +812,8 @@ When you push a tag like `v1.2.0`:
 After the workflow runs, anyone can pull your image:
 
 ```bash
-docker pull ghcr.io/YOUR_GITHUB_ORG/mnemonicai:latest
-docker run --gpus all -p 8400:8400 -v $(pwd)/mnemonicai_data:/app/mnemonicai_data ghcr.io/YOUR_GITHUB_ORG/mnemonicai:latest
+docker pull ghcr.io/drone1337-lgtm/mnemonicai:latest
+docker run --gpus all -p 8400:8400 -v $(pwd)/mnemonicai_data:/app/mnemonicai_data ghcr.io/drone1337-lgtm/mnemonicai:latest
 ```
 
 ### Creating a release
@@ -829,10 +829,10 @@ This triggers the release workflow. The GitHub Release page will have release no
 
 ```bash
 # Pull a specific version
-docker pull ghcr.io/YOUR_GITHUB_ORG/mnemonicai:sha-abc1234
+docker pull ghcr.io/drone1337-lgtm/mnemonicai:sha-abc1234
 
 # Run it instead of latest
-docker run --gpus all -p 8400:8400 ghcr.io/YOUR_GITHUB_ORG/mnemonicai:sha-abc1234
+docker run --gpus all -p 8400:8400 ghcr.io/drone1337-lgtm/mnemonicai:sha-abc1234
 ```
 
 **Never use `latest` in production.** Always pin to a specific version tag or SHA so you know exactly what's running.
@@ -859,7 +859,7 @@ kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.
 
 ```bash
 # 1. Replace YOUR_GITHUB_ORG in the K8s manifests
-sed -i 's/YOUR_GITHUB_ORG/your-actual-org/g' k8s/deployment.yaml k8s/train-job.yaml k8s/kustomization.yaml
+sed -i 's/drone1337-lgtm/your-actual-org/g' k8s/deployment.yaml k8s/train-job.yaml k8s/kustomization.yaml
 
 # 2. Label your GPU node
 kubectl label node <your-node-name> nvidia.com/gpu.present=true
