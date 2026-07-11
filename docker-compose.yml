@@ -9,7 +9,10 @@ services:
       dockerfile: Dockerfile
     runtime: nvidia
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
+      # Pin to the RTX 3090 (24GB). The model does not fit on the 16GB 4080
+      # SUPER: peft upcasts the unquantized ~1B-element embed/lm_head to fp32
+      # (~3.8GiB each) on top of the 4-bit base, needing ~15.6GB total.
+      - NVIDIA_VISIBLE_DEVICES=1
       - MN_REPO=/app
       - MN_HOST=0.0.0.0
       - MN_PORT=8400
@@ -26,10 +29,13 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: all
+              device_ids: ["1"]
               capabilities: [gpu]
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8400/health"]
+      # Healthy = API up AND the real model loaded. The server falls back to a
+      # MockBackend when the model fails to load; that must count as unhealthy
+      # or the container serves canned responses and learns nothing.
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8400/health | grep -v '\"backend\": *\"mock\"'"]
       interval: 30s
       timeout: 15s
       start_period: 90s

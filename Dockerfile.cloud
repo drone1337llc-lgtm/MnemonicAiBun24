@@ -1,0 +1,27 @@
+# Dockerfile.cloud — self-contained MnemonicAi/Aerith image for cloud GPU deploy
+#
+# Extends the base image (built from ./Dockerfile) by baking in whatever
+# Aerith model is currently staged in ./cloud-models/ — no host volume mounts
+# needed, so `docker run --gpus all` works unmodified on any cloud box
+# (RunPod, Lambda, etc.). config.json already points at /app/models/Aerith
+# and /app/models/gguf/Aerith-Q4_K_M.gguf for the local volume-mounted setup,
+# so baking the same paths here needs no config changes.
+#
+# Built via build_cloud_image.sh, which rsyncs the current model into
+# cloud-models/ first — run that script anytime to snapshot "whatever Aerith
+# currently is" into a pushable image.
+ARG BASE_IMAGE=mnemonicai-base:latest
+FROM ${BASE_IMAGE}
+
+COPY cloud-models/Aerith /app/models/Aerith
+COPY cloud-models/gguf /app/models/gguf
+
+EXPOSE 8400 8401
+
+# Longer start_period than the base image: cold-starting on a fresh cloud
+# instance means loading an ~18GB HF snapshot + booting the engine with no
+# warm page cache.
+HEALTHCHECK --interval=30s --timeout=15s --start-period=180s --retries=3 \
+    CMD curl -fsS http://localhost:8400/health | grep -qv '"backend": *"mock"' || exit 1
+
+CMD ["python", "start.py", "--host", "0.0.0.0", "--port", "8400", "--data-dir", "mnemonicai_data"]
